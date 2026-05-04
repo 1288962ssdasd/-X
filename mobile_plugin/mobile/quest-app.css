@@ -1,0 +1,2079 @@
+/**
+ * quest-app.css - 动态任务系统手机UI样式
+ *
+ * iOS风格设计，与task-app.css风格一致
+ * 主色调：#6366f1（靛蓝）
+ *
+ * 任务类型颜色：
+ *   主线：#e74c3c（红色）
+ *   支线：#3498db（蓝色）
+ *   日常：#27ae60（绿色）
+ *   事件：#f39c12（橙色）
+ *
+ * 状态颜色：
+ *   可接取：#3498db
+ *   进行中：#f39c12
+ *   待领奖：#9b59b6
+ *   已完成：#95a5a6
+ *   已失败：#e74c3c
+ */
+
+/* ============================================================
+ *  CSS变量
+ * ============================================================ */
+:root {
+  --quest-primary: #6366f1;
+  --quest-primary-light: #818cf8;
+  --quest-primary-dark: #4f46e5;
+  --quest-primary-bg: rgba(99, 102, 241, 0.08);
+
+  --quest-bg: #f2f2f7;
+  --quest-card-bg: #ffffff;
+  --quest-text: #1c1c1e;
+  --quest-text-secondary: #8e8e93;
+  --quest-text-tertiary: #aeaeb2;
+  --quest-border: #e5e5ea;
+  --quest-separator: #c6c6c8;
+
+  /* 任务类型颜色 */
+  --quest-color-main: #e74c3c;
+  --quest-color-side: #3498db;
+  --quest-color-daily: #27ae60;
+  --quest-color-event: #f39c12;
+
+  /* 状态颜色 */
+  --quest-status-available: #3498db;
+  --quest-status-active: #f39c12;
+  --quest-status-completable: #9b59b6;
+  --quest-status-completed: #95a5a6;
+  --quest-status-failed: #e74c3c;
+  --quest-status-abandoned: #95a5a6;
+
+  /* 圆角 */
+  --quest-radius-sm: 8px;
+  --quest-radius-md: 12px;
+  --quest-radius-lg: 16px;
+  --quest-radius-xl: 20px;
+
+  /* 阴影 */
+  --quest-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --quest-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --quest-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  /* 动画 */
+  --quest-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+ *  容器
+ * ============================================================ */
+.quest-app-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--quest-bg);
+  color: var(--quest-text);
+  padding: 0;
+  min-height: 100%;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+ *  分类标签栏 - iOS Segmented Control
+ * ============================================================ */
+.quest-category-bar {
+  display: flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--quest-radius-md);
+  padding: 2px;
+  margin: 12px 16px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.quest-cat-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--quest-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: var(--quest-transition);
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-cat-item:active {
+  transform: scale(0.96);
+}
+
+.quest-cat-item.active {
+  background: var(--quest-card-bg);
+  color: var(--quest-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+ *  任务列表
+ * ============================================================ */
+.quest-list {
+  padding: 4px 16px 16px;
+}
+
+/* ============================================================
+ *  空状态
+ * ============================================================ */
+.quest-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--quest-text-tertiary);
+}
+
+.quest-empty i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.quest-empty p {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ============================================================
+ *  任务卡片
+ * ============================================================ */
+.quest-card {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--quest-shadow-sm);
+  cursor: pointer;
+  transition: var(--quest-transition);
+  position: relative;
+  overflow: hidden;
+  animation: questCardSlideIn 0.3s ease-out both;
+}
+
+.quest-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+/* 类型颜色条 */
+.quest-card.quest-type-main::before { background: var(--quest-color-main); }
+.quest-card.quest-type-side::before { background: var(--quest-color-side); }
+.quest-card.quest-type-daily::before { background: var(--quest-color-daily); }
+.quest-card.quest-type-event::before { background: var(--quest-color-event); }
+
+.quest-card:active {
+  transform: scale(0.98);
+  box-shadow: var(--quest-shadow-md);
+}
+
+/* 卡片动画 */
+@keyframes questCardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 卡片头部 */
+.quest-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.quest-card-type-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.quest-type-main .quest-card-type-icon { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.quest-type-side .quest-card-type-icon { background: linear-gradient(135deg, #3498db, #2980b9); }
+.quest-type-daily .quest-card-type-icon { background: linear-gradient(135deg, #27ae60, #229954); }
+.quest-type-event .quest-card-type-icon { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+.quest-card-title-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--quest-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.quest-card-issuer {
+  font-size: 12px;
+  color: var(--quest-text-secondary);
+  margin-top: 2px;
+}
+
+.quest-card-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.quest-card-status-badge.quest-status-available {
+  background: rgba(52, 152, 219, 0.12);
+  color: var(--quest-status-available);
+}
+
+.quest-card-status-badge.quest-status-active {
+  background: rgba(243, 156, 18, 0.12);
+  color: var(--quest-status-active);
+}
+
+.quest-card-status-badge.quest-status-completable {
+  background: rgba(155, 89, 182, 0.12);
+  color: var(--quest-status-completable);
+  animation: questPulse 2s ease-in-out infinite;
+}
+
+.quest-card-status-badge.quest-status-completed {
+  background: rgba(149, 165, 166, 0.12);
+  color: var(--quest-status-completed);
+}
+
+.quest-card-status-badge.quest-status-failed {
+  background: rgba(231, 76, 60, 0.12);
+  color: var(--quest-status-failed);
+}
+
+@keyframes questPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* 卡片描述 */
+.quest-card-desc {
+  font-size: 13px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* 卡片底部 */
+.quest-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 优先级标签 */
+.quest-priority {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.quest-priority-high {
+  background: rgba(231, 76, 60, 0.12);
+  color: #e74c3c;
+}
+
+.quest-priority-medium {
+  background: rgba(243, 156, 18, 0.12);
+  color: #f39c12;
+}
+
+.quest-priority-low {
+  background: rgba(149, 165, 166, 0.12);
+  color: #95a5a6;
+}
+
+/* 进度条 */
+.quest-progress-text {
+  font-size: 11px;
+  color: var(--quest-text-secondary);
+  font-weight: 500;
+}
+
+.quest-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.quest-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--quest-primary), var(--quest-primary-light));
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 时间限制 */
+.quest-time-limit {
+  font-size: 11px;
+  color: #e74c3c;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.quest-time-limit i {
+  font-size: 10px;
+}
+
+/* ============================================================
+ *  详情页导航栏
+ * ============================================================ */
+.quest-detail-nav {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 0.5px solid var(--quest-border);
+}
+
+.quest-back-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--quest-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--quest-transition);
+  flex-shrink: 0;
+}
+
+.quest-back-btn:active {
+  transform: scale(0.9);
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.quest-detail-nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--quest-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+}
+
+.quest-detail-nav-spacer {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+ *  详情页信息卡
+ * ============================================================ */
+.quest-detail-info {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 16px;
+  margin: 12px 16px;
+  box-shadow: var(--quest-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-detail-info::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.quest-detail-info.quest-type-main::after { background: linear-gradient(90deg, var(--quest-color-main), transparent); }
+.quest-detail-info.quest-type-side::after { background: linear-gradient(90deg, var(--quest-color-side), transparent); }
+.quest-detail-info.quest-type-daily::after { background: linear-gradient(90deg, var(--quest-color-daily), transparent); }
+.quest-detail-info.quest-type-event::after { background: linear-gradient(90deg, var(--quest-color-event), transparent); }
+
+.quest-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.quest-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quest-tag i {
+  font-size: 10px;
+}
+
+.quest-tag-type {
+  color: #fff;
+}
+
+.quest-type-main .quest-tag-type { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.quest-type-side .quest-tag-type { background: linear-gradient(135deg, #3498db, #2980b9); }
+.quest-type-daily .quest-tag-type { background: linear-gradient(135deg, #27ae60, #229954); }
+.quest-type-event .quest-tag-type { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+.quest-tag-priority {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--quest-text-secondary);
+}
+
+.quest-tag-status.quest-status-available { background: rgba(52, 152, 219, 0.12); color: var(--quest-status-available); }
+.quest-tag-status.quest-status-active { background: rgba(243, 156, 18, 0.12); color: var(--quest-status-active); }
+.quest-tag-status.quest-status-completable { background: rgba(155, 89, 182, 0.12); color: var(--quest-status-completable); }
+.quest-tag-status.quest-status-completed { background: rgba(149, 165, 166, 0.12); color: var(--quest-status-completed); }
+.quest-tag-status.quest-status-failed { background: rgba(231, 76, 60, 0.12); color: var(--quest-status-failed); }
+
+.quest-detail-issuer {
+  font-size: 13px;
+  color: var(--quest-text-secondary);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quest-detail-issuer i {
+  color: var(--quest-primary);
+  font-size: 12px;
+}
+
+.quest-detail-desc {
+  font-size: 14px;
+  color: var(--quest-text);
+  line-height: 1.6;
+}
+
+/* ============================================================
+ *  步骤时间轴
+ * ============================================================ */
+.quest-steps-section {
+  margin: 12px 16px;
+}
+
+.quest-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--quest-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-section-title i {
+  color: var(--quest-primary);
+  font-size: 14px;
+}
+
+.quest-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+.quest-timeline-item {
+  position: relative;
+  padding-bottom: 20px;
+  animation: questTimelineFadeIn 0.3s ease-out both;
+}
+
+.quest-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+@keyframes questTimelineFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 时间轴圆点 */
+.quest-timeline-dot {
+  position: absolute;
+  left: -28px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  z-index: 2;
+  transition: var(--quest-transition);
+}
+
+.quest-step-completed .quest-timeline-dot {
+  background: #27ae60;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+}
+
+.quest-step-active .quest-timeline-dot {
+  background: var(--quest-primary);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  animation: questDotPulse 2s ease-in-out infinite;
+}
+
+.quest-step-locked .quest-timeline-dot {
+  background: var(--quest-border);
+  color: var(--quest-text-tertiary);
+}
+
+@keyframes questDotPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25); }
+  50% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.1); }
+}
+
+/* 时间轴线 */
+.quest-timeline-line {
+  position: absolute;
+  left: -19px;
+  top: 22px;
+  width: 2px;
+  bottom: 0;
+}
+
+.quest-timeline-line-completed {
+  background: #27ae60;
+}
+
+.quest-timeline-line-active {
+  background: linear-gradient(to bottom, var(--quest-primary), var(--quest-border));
+}
+
+.quest-timeline-line-locked {
+  background: var(--quest-border);
+}
+
+/* 时间轴内容 */
+.quest-timeline-content {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 12px;
+  box-shadow: var(--quest-shadow-sm);
+  transition: var(--quest-transition);
+}
+
+.quest-step-active .quest-timeline-content {
+  border: 1.5px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.quest-step-active .quest-timeline-content {
+  cursor: pointer;
+}
+
+.quest-step-active .quest-timeline-content:active {
+  transform: scale(0.98);
+}
+
+.quest-step-locked .quest-timeline-content {
+  opacity: 0.6;
+}
+
+.quest-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.quest-step-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.quest-step-completed .quest-step-icon {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+}
+
+.quest-step-active .quest-step-icon {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--quest-primary);
+}
+
+.quest-step-locked .quest-step-icon {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--quest-text-tertiary);
+}
+
+.quest-step-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--quest-text);
+  flex: 1;
+}
+
+.quest-step-type-label {
+  font-size: 11px;
+  color: var(--quest-text-tertiary);
+  font-weight: 500;
+}
+
+.quest-step-desc {
+  font-size: 12px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.quest-step-result {
+  font-size: 12px;
+  color: #27ae60;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(39, 174, 96, 0.06);
+  border-radius: var(--quest-radius-sm);
+  border-left: 3px solid #27ae60;
+}
+
+/* ============================================================
+ *  奖励区域
+ * ============================================================ */
+.quest-rewards-section {
+  margin: 12px 16px;
+}
+
+.quest-rewards-list {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 12px;
+  box-shadow: var(--quest-shadow-sm);
+}
+
+.quest-reward-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.quest-reward-item:not(:last-child) {
+  border-bottom: 0.5px solid var(--quest-border);
+}
+
+.quest-reward-key {
+  font-size: 14px;
+  color: var(--quest-text);
+}
+
+.quest-reward-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f39c12;
+}
+
+/* ============================================================
+ *  操作按钮区域
+ * ============================================================ */
+.quest-detail-actions {
+  padding: 12px 16px 24px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================================
+ *  通用按钮
+ * ============================================================ */
+.quest-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--quest-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--quest-transition);
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.quest-btn:active {
+  transform: scale(0.96);
+}
+
+/* 涟漪效果 */
+.quest-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.quest-btn:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+.quest-btn-primary {
+  background: linear-gradient(135deg, var(--quest-primary), var(--quest-primary-dark));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.quest-btn-primary:active {
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.2);
+}
+
+.quest-btn-secondary {
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--quest-primary);
+}
+
+.quest-btn-danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.quest-btn-reward {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+  animation: questRewardGlow 2s ease-in-out infinite;
+}
+
+@keyframes questRewardGlow {
+  0%, 100% { box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3); }
+  50% { box-shadow: 0 2px 16px rgba(243, 156, 18, 0.5); }
+}
+
+.quest-btn-disabled {
+  background: var(--quest-border);
+  color: var(--quest-text-tertiary);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.quest-btn-disabled:active {
+  transform: none;
+}
+
+.quest-btn-choice {
+  width: 100%;
+  background: var(--quest-card-bg);
+  color: var(--quest-text);
+  border: 1.5px solid var(--quest-border);
+  padding: 12px 16px;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+  border-radius: var(--quest-radius-md);
+}
+
+.quest-btn-choice:active {
+  background: var(--quest-primary-bg);
+  border-color: var(--quest-primary);
+  color: var(--quest-primary);
+}
+
+.quest-btn-option {
+  width: 100%;
+  background: var(--quest-card-bg);
+  color: var(--quest-text);
+  border: 1.5px solid var(--quest-border);
+  padding: 14px 16px;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 10px;
+  border-radius: var(--quest-radius-md);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quest-btn-option:active {
+  background: var(--quest-primary-bg);
+  border-color: var(--quest-primary);
+}
+
+.quest-btn-option.quest-option-selected {
+  background: var(--quest-primary-bg);
+  border-color: var(--quest-primary);
+  color: var(--quest-primary);
+}
+
+.quest-btn-option.quest-option-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quest-option-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--quest-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.quest-option-text {
+  flex: 1;
+}
+
+.quest-btn-buy {
+  padding: 6px 14px;
+  font-size: 12px;
+  background: linear-gradient(135deg, var(--quest-primary), var(--quest-primary-dark));
+  color: #fff;
+  border-radius: var(--quest-radius-sm);
+  white-space: nowrap;
+}
+
+.quest-btn-gift {
+  padding: 6px 14px;
+  font-size: 12px;
+  background: linear-gradient(135deg, #e91e63, #c2185b);
+  color: #fff;
+  border-radius: var(--quest-radius-sm);
+  white-space: nowrap;
+}
+
+/* ============================================================
+ *  交互页通用
+ * ============================================================ */
+.quest-interaction-body {
+  padding: 0 0 24px;
+}
+
+.quest-interaction-unknown {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--quest-text-secondary);
+}
+
+/* ============================================================
+ *  前往地点 (travel)
+ * ============================================================ */
+.quest-travel {
+  padding: 16px;
+  text-align: center;
+}
+
+.quest-travel-scene {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--quest-shadow-md);
+}
+
+.quest-travel-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--quest-primary), var(--quest-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 28px;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+
+.quest-travel-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 8px;
+}
+
+.quest-travel-desc {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.quest-travel-hint {
+  font-size: 13px;
+  color: var(--quest-primary);
+  font-style: italic;
+}
+
+.quest-travel-go-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 24px;
+  font-size: 16px;
+}
+
+/* 前往动画 */
+.quest-travel-anim {
+  margin-top: 20px;
+  text-align: center;
+  animation: questFadeIn 0.4s ease-out;
+}
+
+@keyframes questFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.quest-travel-anim-icon {
+  font-size: 36px;
+  color: var(--quest-primary);
+  margin-bottom: 12px;
+}
+
+.quest-walk-anim {
+  animation: questWalk 0.6s ease-in-out infinite;
+}
+
+@keyframes questWalk {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-5deg); }
+  75% { transform: translateX(4px) rotate(5deg); }
+}
+
+.quest-travel-anim-text {
+  font-size: 15px;
+  color: var(--quest-text-secondary);
+  margin-bottom: 12px;
+  animation: questDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes questDots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+
+.quest-travel-progress-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 2px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.quest-travel-progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--quest-primary), var(--quest-primary-light));
+  border-radius: 2px;
+}
+
+/* ============================================================
+ *  NPC对话 (dialogue)
+ * ============================================================ */
+.quest-dialogue {
+  padding: 12px 16px;
+}
+
+.quest-dialogue-npc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.quest-npc-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--quest-shadow-sm);
+}
+
+.quest-npc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.quest-npc-avatar-default {
+  background: linear-gradient(135deg, var(--quest-primary), var(--quest-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+}
+
+.quest-npc-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--quest-text);
+}
+
+.quest-dialogue-messages {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 0;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quest-dialogue-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: var(--quest-radius-md);
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  animation: questBubbleIn 0.3s ease-out;
+  position: relative;
+  word-break: break-word;
+}
+
+@keyframes questBubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.quest-bubble-npc {
+  background: var(--quest-card-bg);
+  color: var(--quest-text);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--quest-shadow-sm);
+  margin-right: auto;
+}
+
+.quest-bubble-player {
+  background: linear-gradient(135deg, var(--quest-primary), var(--quest-primary-dark));
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
+.quest-bubble-speaker {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--quest-primary);
+  margin-bottom: 4px;
+}
+
+.quest-bubble-player .quest-bubble-speaker {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 打字机效果 */
+.quest-typewriter {
+  display: inline;
+}
+
+.quest-typewriter.quest-typing::after {
+  content: '|';
+  animation: questBlink 0.8s step-end infinite;
+  color: var(--quest-primary);
+  font-weight: 300;
+}
+
+.quest-bubble-player .quest-typewriter.quest-typing::after {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes questBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.quest-dialogue-choices {
+  margin-top: 12px;
+}
+
+.quest-dialogue-continue {
+  margin-top: 12px;
+  display: none;
+}
+
+.quest-dialogue-continue-btn {
+  width: 100%;
+}
+
+/* ============================================================
+ *  购物 (shopping)
+ * ============================================================ */
+.quest-shopping {
+  padding: 12px 16px;
+}
+
+.quest-shop-header {
+  text-align: center;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--quest-shadow-sm);
+}
+
+.quest-shop-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 24px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.quest-shop-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 4px;
+}
+
+.quest-shop-desc {
+  font-size: 13px;
+  color: var(--quest-text-secondary);
+}
+
+.quest-shop-money {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f39c12;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: rgba(243, 156, 18, 0.06);
+  border-radius: var(--quest-radius-md);
+}
+
+.quest-shop-money i {
+  margin-right: 4px;
+}
+
+.quest-shop-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 12px;
+  box-shadow: var(--quest-shadow-sm);
+  transition: var(--quest-transition);
+}
+
+.quest-shop-item:active {
+  transform: scale(0.98);
+}
+
+.quest-shop-item-disabled {
+  opacity: 0.5;
+}
+
+.quest-shop-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-shop-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--quest-text);
+  margin-bottom: 2px;
+}
+
+.quest-shop-item-desc {
+  font-size: 12px;
+  color: var(--quest-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-shop-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.quest-shop-item-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f39c12;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.quest-shop-item-price i {
+  font-size: 11px;
+}
+
+.quest-shop-exit {
+  margin-top: 16px;
+}
+
+.quest-shop-exit-btn {
+  width: 100%;
+}
+
+/* ============================================================
+ *  送礼 (gift)
+ * ============================================================ */
+.quest-gift {
+  padding: 12px 16px;
+}
+
+.quest-gift-target {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--quest-shadow-sm);
+}
+
+.quest-gift-target-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e91e63, #c2185b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.quest-gift-target-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--quest-text);
+  margin-bottom: 2px;
+}
+
+.quest-gift-hint {
+  font-size: 13px;
+  color: var(--quest-text-secondary);
+}
+
+.quest-gift-inventory {
+  margin-bottom: 12px;
+}
+
+.quest-gift-empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--quest-text-tertiary);
+}
+
+.quest-gift-item {
+  display: flex;
+  align-items: center;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: var(--quest-shadow-sm);
+  transition: var(--quest-transition);
+}
+
+.quest-gift-item-preferred {
+  border: 1.5px solid rgba(233, 30, 99, 0.3);
+  background: rgba(233, 30, 99, 0.03);
+}
+
+.quest-gift-item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--quest-primary);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.quest-gift-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-gift-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--quest-text);
+}
+
+.quest-gift-item-desc {
+  font-size: 12px;
+  color: var(--quest-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-gift-feedback {
+  margin-top: 12px;
+}
+
+.quest-gift-reaction {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--quest-shadow-sm);
+  animation: questFadeIn 0.4s ease-out;
+}
+
+.quest-gift-reaction i {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.quest-reaction-happy i {
+  color: #e91e63;
+  animation: questHeartBeat 0.6s ease-in-out;
+}
+
+.quest-reaction-normal i {
+  color: var(--quest-primary);
+}
+
+@keyframes questHeartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.quest-gift-reaction p {
+  font-size: 14px;
+  color: var(--quest-text);
+  line-height: 1.5;
+}
+
+/* ============================================================
+ *  调查 (investigate)
+ * ============================================================ */
+.quest-investigate {
+  padding: 12px 16px;
+}
+
+.quest-investigate-scene {
+  text-align: center;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--quest-shadow-sm);
+}
+
+.quest-investigate-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 24px;
+  color: #ecf0f1;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+
+.quest-investigate-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 6px;
+}
+
+.quest-investigate-desc {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+}
+
+.quest-investigate-points {
+  margin-bottom: 16px;
+}
+
+.quest-investigate-point {
+  display: flex;
+  align-items: center;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 14px 12px;
+  margin-bottom: 8px;
+  box-shadow: var(--quest-shadow-sm);
+  cursor: pointer;
+  transition: var(--quest-transition);
+}
+
+.quest-investigate-point:active {
+  transform: scale(0.98);
+  background: var(--quest-primary-bg);
+}
+
+.quest-investigate-point.quest-investigated {
+  opacity: 0.6;
+}
+
+.quest-investigate-point.quest-investigated .quest-investigate-point-icon {
+  color: #27ae60;
+}
+
+.quest-investigate-point-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--quest-primary);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.quest-investigate-point-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-investigate-point-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--quest-text);
+}
+
+.quest-investigate-point-hint {
+  font-size: 12px;
+  color: var(--quest-text-secondary);
+  margin-top: 2px;
+}
+
+.quest-investigate-point-arrow {
+  color: var(--quest-text-tertiary);
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.quest-investigate-result {
+  margin-bottom: 12px;
+}
+
+.quest-clue-found {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 14px;
+  box-shadow: var(--quest-shadow-md);
+  border-left: 3px solid var(--quest-primary);
+  animation: questFadeIn 0.4s ease-out;
+}
+
+.quest-clue-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--quest-primary);
+  flex-shrink: 0;
+}
+
+.quest-clue-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--quest-text);
+  margin-bottom: 4px;
+}
+
+.quest-clue-content p {
+  font-size: 13px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+}
+
+.quest-investigate-complete {
+  margin-top: 8px;
+}
+
+.quest-investigate-done-btn {
+  width: 100%;
+}
+
+/* ============================================================
+ *  等待 (wait)
+ * ============================================================ */
+.quest-wait {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.quest-wait-icon {
+  font-size: 48px;
+  color: var(--quest-primary);
+  margin-bottom: 16px;
+}
+
+.quest-hourglass-anim {
+  animation: questHourglass 2s ease-in-out infinite;
+}
+
+@keyframes questHourglass {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+}
+
+.quest-wait-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 8px;
+}
+
+.quest-wait-desc {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.quest-wait-timer {
+  margin-bottom: 24px;
+}
+
+.quest-wait-timer-ring {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.quest-wait-timer-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.quest-wait-ring-bg {
+  fill: none;
+  stroke: rgba(99, 102, 241, 0.1);
+  stroke-width: 6;
+}
+
+.quest-wait-ring-fill {
+  fill: none;
+  stroke: var(--quest-primary);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+.quest-wait-timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--quest-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.quest-wait-skip {
+  margin-top: 8px;
+}
+
+.quest-wait-skip-btn {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+  display: flex;
+}
+
+/* ============================================================
+ *  选择分支 (select)
+ * ============================================================ */
+.quest-select {
+  padding: 16px;
+}
+
+.quest-select-question {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.quest-select-icon {
+  font-size: 40px;
+  color: var(--quest-primary);
+  margin-bottom: 12px;
+}
+
+.quest-select-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 8px;
+}
+
+.quest-select-desc {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+}
+
+.quest-select-options {
+  margin-bottom: 12px;
+}
+
+.quest-select-result {
+  margin-top: 16px;
+}
+
+.quest-select-result-content {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--quest-shadow-md);
+  margin-bottom: 12px;
+  animation: questFadeIn 0.4s ease-out;
+}
+
+.quest-select-result-icon {
+  font-size: 28px;
+  color: #f39c12;
+  margin-bottom: 8px;
+}
+
+.quest-select-result-content p {
+  font-size: 14px;
+  color: var(--quest-text);
+  line-height: 1.6;
+}
+
+/* ============================================================
+ *  自定义 (custom)
+ * ============================================================ */
+.quest-custom {
+  padding: 16px;
+}
+
+.quest-custom-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.quest-custom-icon {
+  font-size: 40px;
+  color: var(--quest-primary);
+  margin-bottom: 12px;
+}
+
+.quest-custom-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--quest-text);
+  margin-bottom: 8px;
+}
+
+.quest-custom-desc {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+  line-height: 1.5;
+}
+
+.quest-custom-content {
+  background: var(--quest-card-bg);
+  border-radius: var(--quest-radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--quest-shadow-sm);
+  min-height: 100px;
+}
+
+.quest-custom-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.quest-custom-action-btn {
+  width: 100%;
+}
+
+.quest-custom-complete {
+  margin-top: 8px;
+}
+
+.quest-custom-done-btn {
+  width: 100%;
+}
+
+/* ============================================================
+ *  Toast 提示
+ * ============================================================ */
+.quest-toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  padding: 10px 20px;
+  border-radius: var(--quest-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--quest-shadow-lg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  max-width: 80%;
+  text-align: center;
+}
+
+.quest-toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.quest-toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+}
+
+.quest-toast-success {
+  background: #27ae60;
+  color: #fff;
+}
+
+.quest-toast-error {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.quest-toast-warning {
+  background: #f39c12;
+  color: #fff;
+}
+
+.quest-toast-info {
+  background: var(--quest-primary);
+  color: #fff;
+}
+
+/* ============================================================
+ *  滚动条美化
+ * ============================================================ */
+.quest-app-container::-webkit-scrollbar,
+.quest-dialogue-messages::-webkit-scrollbar {
+  width: 3px;
+}
+
+.quest-app-container::-webkit-scrollbar-track,
+.quest-dialogue-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quest-app-container::-webkit-scrollbar-thumb,
+.quest-dialogue-messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+/* ============================================================
+ *  加载动画
+ * ============================================================ */
+.quest-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.quest-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(99, 102, 241, 0.15);
+  border-top-color: var(--quest-primary);
+  border-radius: 50%;
+  animation: questSpin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes questSpin {
+  to { transform: rotate(360deg); }
+}
+
+.quest-loading-text {
+  font-size: 14px;
+  color: var(--quest-text-secondary);
+}
+
+/* ============================================================
+ *  响应式适配
+ * ============================================================ */
+@media screen and (max-width: 360px) {
+  .quest-category-bar {
+    margin: 8px 10px 6px;
+  }
+
+  .quest-cat-item {
+    font-size: 12px;
+    padding: 6px 2px;
+  }
+
+  .quest-list {
+    padding: 4px 10px 10px;
+  }
+
+  .quest-card {
+    padding: 12px;
+  }
+
+  .quest-detail-info {
+    margin: 8px 10px;
+    padding: 12px;
+  }
+
+  .quest-steps-section {
+    margin: 8px 10px;
+  }
+
+  .quest-rewards-section {
+    margin: 8px 10px;
+  }
+
+  .quest-detail-actions {
+    padding: 8px 10px 20px;
+  }
+}
+
+@media screen and (min-width: 414px) {
+  .quest-list {
+    padding: 4px 20px 20px;
+  }
+
+  .quest-category-bar {
+    margin: 14px 20px 10px;
+  }
+
+  .quest-detail-info {
+    margin: 14px 20px;
+  }
+
+  .quest-steps-section {
+    margin: 14px 20px;
+  }
+
+  .quest-rewards-section {
+    margin: 14px 20px;
+  }
+
+  .quest-detail-actions {
+    padding: 14px 20px 28px;
+  }
+}
+
+/* ============================================================
+ *  暗色模式支持（预留）
+ * ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --quest-bg: #000000;
+    --quest-card-bg: #1c1c1e;
+    --quest-text: #ffffff;
+    --quest-text-secondary: #98989d;
+    --quest-text-tertiary: #636366;
+    --quest-border: #38383a;
+    --quest-separator: #48484a;
+    --quest-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --quest-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --quest-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .quest-category-bar {
+    background: rgba(118, 118, 128, 0.24);
+  }
+
+  .quest-cat-item.active {
+    background: #2c2c2e;
+  }
+
+  .quest-back-btn {
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .quest-detail-nav {
+    background: rgba(28, 28, 30, 0.85);
+    border-bottom-color: var(--quest-border);
+  }
+
+  .quest-bubble-npc {
+    background: #2c2c2e;
+  }
+
+  .quest-btn-choice,
+  .quest-btn-option {
+    background: #2c2c2e;
+    border-color: var(--quest-border);
+    color: var(--quest-text);
+  }
+
+  .quest-btn-secondary {
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .quest-shop-money {
+    background: rgba(243, 156, 18, 0.08);
+  }
+
+  .quest-gift-item-preferred {
+    background: rgba(233, 30, 99, 0.06);
+  }
+}
+
+/* ============================================================
+ *  减弱动画（无障碍）
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
