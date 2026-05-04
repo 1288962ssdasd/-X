@@ -22,7 +22,7 @@
     { name: 'friend-renderer',    src: 'app/friend-renderer.js',       globalVar: 'friendRenderer',    deps: ['phone-data-store'] },
     { name: 'message-renderer',   src: 'app/message-renderer.js',      globalVar: 'messageRenderer',   deps: ['friend-renderer'] },
     { name: 'message-sender',    src: 'app/message-sender.js',        globalVar: 'messageSender',     deps: ['message-renderer'] },
-    { name: 'message-app',        src: 'app/message-app.js',           globalVar: 'messageApp',        deps: ['message-sender', 'phone-data-store'] },
+    { name: 'message-app',        src: 'app/message-app.js',           globalVar: 'MessageApp',        deps: ['message-sender', 'phone-data-store'] },
     { name: 'attachment-sender', src: 'app/attachment-sender.js',     globalVar: 'attachmentSender', deps: ['message-app'] },
     { name: 'friends-circle',     src: 'app/friends-circle.js',        globalVar: 'FriendsCircle',     deps: ['message-app'] },
     { name: 'voice-message-handler', src: 'app/voice-message-handler.js', globalVar: 'voiceMessageHandler', deps: ['message-renderer'] },

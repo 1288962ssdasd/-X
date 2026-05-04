@@ -4,16 +4,21 @@
  */
 
 // [防重入] 确保文件只被执行一次
-if (window._messageAppLoading) {
-    console.log('[Message App] 文件正在加载中，跳过重复执行');
-    throw new Error('[Message App] 防重入：文件正在加载中');
-}
-if (window.messageApp && window.messageApp.getAppContent) {
-    console.log('[Message App] 模块已加载，跳过重复执行');
-    // 不抛出错误，避免中断加载流程
-} else {
+(function() {
+    // 如果已经完全加载成功，直接返回
+    if (window.messageApp && typeof window.messageApp.getAppContent === 'function') {
+        console.log('[Message App] 模块已加载完成，跳过重复执行');
+        return;
+    }
+    // 如果正在加载中，等待加载完成
+    if (window._messageAppLoading) {
+        console.log('[Message App] 文件正在加载中，跳过重复执行');
+        return;
+    }
+    // 标记开始加载
     window._messageAppLoading = true;
-}
+    console.log('[Message App] 开始加载...');
+})();
 
 // 延迟加载SillyTavern的事件系统
 let eventSource, event_types, chat, characters, this_chid, name1, name2;
