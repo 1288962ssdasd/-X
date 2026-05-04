@@ -161,6 +161,13 @@ if (typeof window.WeiboAutoListener !== 'undefined') {
     }
 
     /**
+     * 开始监听（startListening 的别名）
+     */
+    start() {
+      this.startListening();
+    }
+
+    /**
      * 停止监听
      */
     stopListening() {

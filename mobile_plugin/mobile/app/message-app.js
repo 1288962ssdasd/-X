@@ -3,6 +3,18 @@
  * 为mobile-phone.js提供消息功能
  */
 
+// [防重入] 确保文件只被执行一次
+if (window._messageAppLoading) {
+    console.log('[Message App] 文件正在加载中，跳过重复执行');
+    throw new Error('[Message App] 防重入：文件正在加载中');
+}
+if (window.messageApp && window.messageApp.getAppContent) {
+    console.log('[Message App] 模块已加载，跳过重复执行');
+    // 不抛出错误，避免中断加载流程
+} else {
+    window._messageAppLoading = true;
+}
+
 // 延迟加载SillyTavern的事件系统
 let eventSource, event_types, chat, characters, this_chid, name1, name2;
 let sillyTavernImportAttempted = false;
@@ -6556,4 +6568,10 @@ if (typeof window.MessageApp === 'undefined') {
   };
 
   console.log('[Message App] 信息应用模块加载完成');
+  
+  // [防重入] 清除加载标志
+  if (window._messageAppLoading) {
+    window._messageAppLoading = false;
+    console.log('[Message App] 已清除加载标志');
+  }
 } // 结束 if (typeof window.MessageApp === 'undefined') 检查
