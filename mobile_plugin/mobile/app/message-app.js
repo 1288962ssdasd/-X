@@ -1833,24 +1833,38 @@ if (typeof window.MessageApp === 'undefined') {
     // [PhoneDataStore集成] 从统一数据层读取消息数据
     renderMessageList() {
       let friendsHtml = '';
+      
+      // 简单的 escapeHtml 实现，避免依赖问题
+      function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
 
       // [PhoneDataStore集成] 尝试从统一数据层获取消息
       if (window.PhoneDataStore) {
         var pdsFriends = PhoneDataStore.get('friends');
         if (pdsFriends && Array.isArray(pdsFriends) && pdsFriends.length > 0) {
           console.log('[Message App] 从 PhoneDataStore 加载好友列表:', pdsFriends.length, '个');
-          var self = this;
-          var friendsHtmlParts = pdsFriends.map(function(friend) {
+          var friendsHtmlParts = [];
+          for (var i = 0; i < pdsFriends.length; i++) {
+            var friend = pdsFriends[i];
             var lastMsg = PhoneDataStore.get('lastMessage.' + friend.number) || {};
             var lastMessage = lastMsg.content || '暂无消息';
             var avatar = '';
-            return '<div class="message-item friend-item" data-friend-id="' + friend.number + '" data-is-group="false">' +
-                   '<div class="message-avatar">' + avatar + '</div>' +
-                   '<div class="message-content">' +
-                   '<div class="message-name">' + self.escapeHtml(friend.name) + '</div>' +
-                   '<div class="message-text">' + self.escapeHtml(lastMessage) + '</div>' +
-                   '</div></div>';
-          });
+            friendsHtmlParts.push(
+              '<div class="message-item friend-item" data-friend-id="' + friend.number + '" data-is-group="false">' +
+              '<div class="message-avatar">' + avatar + '</div>' +
+              '<div class="message-content">' +
+              '<div class="message-name">' + escapeHtml(friend.name) + '</div>' +
+              '<div class="message-text">' + escapeHtml(lastMessage) + '</div>' +
+              '</div></div>'
+            );
+          }
           friendsHtml = friendsHtmlParts.join('');
         }
       }
