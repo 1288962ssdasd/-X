@@ -131,11 +131,20 @@
 
   /**
    * 安全调用 BridgeAPI._readVar
-   * 当 BridgeAPI 不可用时返回 null
+   * [PhoneDataStore集成] 优先从 PhoneDataStore 读取缓存
    * @param {string} varPath - 变量路径
    * @returns {Promise<*>}
    */
   function safeReadVar(varPath) {
+    // [PhoneDataStore集成] 从缓存读取
+    if (window.PhoneDataStore) {
+      var key = varPath.replace('xb.phone.', '').replace('xb.quest.', 'quests.');
+      var cached = PhoneDataStore.get(key);
+      if (cached !== undefined) {
+        return Promise.resolve(JSON.stringify(cached));
+      }
+    }
+    
     if (typeof BridgeAPI === 'undefined' || !BridgeAPI || typeof BridgeAPI._readVar !== 'function') {
       return Promise.resolve(null);
     }
@@ -144,12 +153,23 @@
 
   /**
    * 安全调用 BridgeAPI._writeVar
-   * 当 BridgeAPI 不可用时静默失败
+   * [PhoneDataStore集成] 同时写入 PhoneDataStore 缓存
    * @param {string} varPath - 变量路径
    * @param {string} value - 变量值
    * @returns {Promise<*>}
    */
   function safeWriteVar(varPath, value) {
+    // [PhoneDataStore集成] 写入缓存
+    if (window.PhoneDataStore) {
+      var key = varPath.replace('xb.phone.', '').replace('xb.quest.', 'quests.');
+      try {
+        var parsed = JSON.parse(value);
+        PhoneDataStore.set(key, parsed, { persist: false });
+      } catch (e) {
+        PhoneDataStore.set(key, value, { persist: false });
+      }
+    }
+    
     if (typeof BridgeAPI === 'undefined' || !BridgeAPI || typeof BridgeAPI._writeVar !== 'function') {
       console.warn('[QuestEngine] BridgeAPI 不可用，跳过写入: ' + varPath);
       return Promise.resolve(null);

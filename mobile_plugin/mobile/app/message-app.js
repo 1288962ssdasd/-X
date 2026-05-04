@@ -1830,32 +1830,41 @@ if (typeof window.MessageApp === 'undefined') {
     }
 
     // 渲染消息列表
+    // [PhoneDataStore集成] 从统一数据层读取消息数据
     renderMessageList() {
-      // 使用好友渲染器从上下文中提取好友信息
       let friendsHtml = '';
 
-      // @ts-ignore - 好友渲染器类型声明
-      if (window.renderFriendsFromContext) {
-        // @ts-ignore - 好友渲染器类型声明
-        friendsHtml = window.renderFriendsFromContext();
-      } else {
-        friendsHtml = `
-                <div class="empty-state">
-                    <div class="empty-icon">💬</div>
-                    <div class="empty-text">暂无好友</div>
-                    <div class="empty-hint">点击右上角"添加"按钮添加好友</div>
-                </div>
-            `;
+      // [PhoneDataStore集成] 尝试从统一数据层获取消息
+      if (window.PhoneDataStore) {
+        var pdsFriends = PhoneDataStore.get('friends');
+        if (pdsFriends && Array.isArray(pdsFriends) && pdsFriends.length > 0) {
+          console.log('[Message App] 从 PhoneDataStore 加载好友列表:', pdsFriends.length, '个');
+          var self = this;
+          var friendsHtmlParts = pdsFriends.map(function(friend) {
+            var lastMsg = PhoneDataStore.get('lastMessage.' + friend.number) || {};
+            var lastMessage = lastMsg.content || '暂无消息';
+            var avatar = '';
+            return '<div class="message-item friend-item" data-friend-id="' + friend.number + '" data-is-group="false">' +
+                   '<div class="message-avatar">' + avatar + '</div>' +
+                   '<div class="message-content">' +
+                   '<div class="message-name">' + self.escapeHtml(friend.name) + '</div>' +
+                   '<div class="message-text">' + self.escapeHtml(lastMessage) + '</div>' +
+                   '</div></div>';
+          });
+          friendsHtml = friendsHtmlParts.join('');
+        }
       }
 
-      return `
-            <div class="messages-app">
-                <div class="message-list" id="message-list">
-                    ${friendsHtml}
-                </div>
-                ${this.renderTabSwitcher()}
-            </div>
-        `;
+      // 如果 PhoneDataStore 没有数据，降级到 friendRenderer
+      if (!friendsHtml) {
+        if (window.renderFriendsFromContext) {
+          friendsHtml = window.renderFriendsFromContext();
+        } else {
+          friendsHtml = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无好友</div></div>';
+        }
+      }
+
+      return '<div class="messages-app"><div class="message-list" id="message-list">' + friendsHtml + '</div>' + this.renderTabSwitcher() + '</div>';
     }
 
     // 渲染添加好友界面

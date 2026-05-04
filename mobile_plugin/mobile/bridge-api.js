@@ -2387,63 +2387,11 @@
     },
 
     /**
-     * 将消息投递到 message-app 的数据层
+     * 将消息投递到 message-app 的数据层（通过 PhoneDataStore 统一数据层）
      */
     _deliverMessageToApp: function (charName, charId, msgType, content) {
       var friendId = charId || charName;
-
-      // [修复v3] 直接操作 extractedFriends，不通过 addFriend（避免触发 updateAppContent 循环）
-      if (window.friendRenderer && window.friendRenderer.extractedFriends) {
-        var senderExists = window.friendRenderer.extractedFriends.some(function(f) {
-          return f.number === friendId || f.name === charName;
-        });
-        if (!senderExists) {
-          window.friendRenderer.extractedFriends.push({
-            type: 'friend',
-            name: charName,
-            number: String(friendId),
-            messageIndex: 0,
-            addTime: Date.now(),
-            isGroup: false,
-            source: 'direct'
-          });
-          // 异步同步到变量（不阻塞消息投递）
-          if (window.BridgeAPI && window.BridgeAPI.ConfigManager && window.BridgeAPI.ConfigManager.get) {
-            window.BridgeAPI.ConfigManager.get('xb.phone.friends.list').then(function(existingList) {
-              var friends = [];
-              if (existingList) {
-                try { friends = JSON.parse(existingList); } catch(e) { friends = []; }
-              }
-              if (!Array.isArray(friends)) friends = [];
-              var dup = friends.some(function(f) {
-                return String(f.number) === String(friendId) || f.name === charName;
-              });
-              if (!dup) {
-                friends.push({ name: charName, number: String(friendId), addTime: Date.now() });
-                window.BridgeAPI.ConfigManager.set('xb.phone.friends.list', JSON.stringify(friends));
-              }
-            }).catch(function() {});
-          }
-        }
-      }
-
-      // 确保 friendsData 存在
-      if (!window.messageApp.friendsData) {
-        window.messageApp.friendsData = {};
-      }
-
-      // 如果该联系人不存在，自动创建
-      if (!window.messageApp.friendsData[friendId]) {
-        window.messageApp.friendsData[friendId] = {
-          friendId: friendId,
-          friendName: charName,
-          messages: [],
-          lastMessage: '',
-          lastTime: ''
-        };
-        console.log('[BridgeAPI] 自动创建联系人数据:', charName, friendId);
-      }
-
+      
       // 构造消息对象
       var now = new Date();
       var timeStr = (now.getHours() < 10 ? '0' : '') + now.getHours() + ':' +
@@ -2462,24 +2410,90 @@
         source: 'director'
       };
 
-      // 写入数据层
-      window.messageApp.friendsData[friendId].messages.push(newMsg);
-      window.messageApp.friendsData[friendId].lastMessage = content.substring(0, 20);
-      window.messageApp.friendsData[friendId].lastTime = timeStr;
+      // 确保 PhoneDataStore 可用
+      if (window.PhoneDataStore) {
+        // 通过 PhoneDataStore 更新好友列表
+        var friends = PhoneDataStore.get('friends') || [];
+        var senderExists = friends.some(function(f) {
+          return String(f.number) === String(friendId) || f.name === charName;
+        });
+        if (!senderExists) {
+          friends.push({
+            type: 'friend',
+            name: charName,
+            number: String(friendId),
+            messageIndex: 0,
+            addTime: Date.now(),
+            isGroup: false,
+            source: 'director'
+          });
+          PhoneDataStore.set('friends', friends);
+        }
 
-      // [Fix-4] 如果当前正在查看这个联系人的聊天，刷新界面
-      // 修复：不再只渲染单条消息，而是重新渲染全部消息，确保降级时数据完整
+        // 通过 PhoneDataStore 更新消息列表
+        var messages = PhoneDataStore.get('messages.' + friendId) || [];
+        messages.push(newMsg);
+        PhoneDataStore.set('messages.' + friendId, messages);
+
+        // 更新最后消息（用于消息列表显示）
+        PhoneDataStore.set('lastMessage.' + friendId, {
+          content: content.substring(0, 20),
+          time: timeStr,
+          timestamp: Date.now()
+        });
+
+        console.log('[BridgeAPI] 消息已通过 PhoneDataStore 写入 (friends:' + friends.length + ', messages:' + messages.length + ')');
+      } else {
+        // PhoneDataStore 未就绪，降级到直接操作内存
+        console.warn('[BridgeAPI] PhoneDataStore 未就绪，使用降级模式');
+        
+        // [修复v3] 直接操作 extractedFriends
+        if (window.friendRenderer && window.friendRenderer.extractedFriends) {
+          var senderExists = window.friendRenderer.extractedFriends.some(function(f) {
+            return f.number === friendId || f.name === charName;
+          });
+          if (!senderExists) {
+            window.friendRenderer.extractedFriends.push({
+              type: 'friend',
+              name: charName,
+              number: String(friendId),
+              messageIndex: 0,
+              addTime: Date.now(),
+              isGroup: false,
+              source: 'direct'
+            });
+          }
+        }
+
+        // 确保 friendsData 存在
+        if (!window.messageApp.friendsData) {
+          window.messageApp.friendsData = {};
+        }
+        if (!window.messageApp.friendsData[friendId]) {
+          window.messageApp.friendsData[friendId] = {
+            friendId: friendId,
+            friendName: charName,
+            messages: [],
+            lastMessage: '',
+            lastTime: ''
+          };
+        }
+
+        // 写入数据层
+        window.messageApp.friendsData[friendId].messages.push(newMsg);
+        window.messageApp.friendsData[friendId].lastMessage = content.substring(0, 20);
+        window.messageApp.friendsData[friendId].lastTime = timeStr;
+      }
+
+      // UI 更新逻辑（保持原有逻辑）
       if (window.messageApp.currentFriendId === friendId &&
           window.messageApp.currentView === 'messageDetail') {
-        // 优先使用增量追加（性能更好）
         var html = window.messageRenderer.renderSingleMessage(newMsg);
         if (html) {
           var container = document.querySelector('.message-detail-content');
           if (container) {
-            // 检查是否已有消息内容，如果没有则说明是降级场景，需要全量渲染
             var existingMsgs = container.querySelectorAll('.message-detail');
             if (existingMsgs.length === 0) {
-              // [Fix-4] 降级场景：容器为空，遍历 friendsData 渲染所有消息
               var allMsgs = window.messageApp.friendsData[friendId].messages || [];
               var allHtml = '';
               for (var mi = 0; mi < allMsgs.length; mi++) {
@@ -2490,7 +2504,6 @@
                 container.innerHTML = allHtml;
               }
             } else {
-              // 正常场景：追加新消息
               container.insertAdjacentHTML('beforeend', html);
             }
             setTimeout(function () {
@@ -2499,7 +2512,6 @@
           }
         }
       } else {
-        // 不在当前聊天窗口，触发通知
         EventBus.emit('phone:notification', {
           title: charName,
           content: content.substring(0, 30),
@@ -2511,29 +2523,10 @@
         });
       }
 
-      console.log('[BridgeAPI] 消息已写入数据层 (' +
-        window.messageApp.friendsData[friendId].messages.length + '条)');
-
-      // [修复v3] 不再调用 friendRenderer.refresh()，避免清空 extractedFriends
-      // 改为：如果发送者不在 extractedFriends 中，通过 addFriend 添加（会同步写入变量）
-      if (window.friendRenderer && window.friendRenderer.extractedFriends) {
-        var senderExists = window.friendRenderer.extractedFriends.some(function(f) {
-          return f.number === friendId || f.name === charName;
-        });
-        if (!senderExists && window.friendRenderer.addFriend) {
-          window.friendRenderer.addFriend(charName, friendId);
-        }
-      }
-
-      // [修复v3] 无论当前视图是什么，都触发 UI 刷新
-      // 如果在消息详情页且是当前联系人，已在上面的 insertAdjacentHTML 处理
-      // 如果在列表页或其他页面，需要刷新以显示新消息
+      // 触发 UI 刷新
       if (window.messageApp && window.messageApp.updateAppContent) {
         try { window.messageApp.updateAppContent(); } catch (e) {}
       }
-
-      // [Fix-2] 延迟再次强制刷新，确保 friendsData 写入后 UI 已更新
-      // 解决 EventBus → WorkflowEngine → processPendingMessages 异步链路中 UI 未及时刷新的问题
       setTimeout(function () {
         if (window.messageApp && window.messageApp.updateAppContent) {
           try { window.messageApp.updateAppContent(); } catch (e) {}

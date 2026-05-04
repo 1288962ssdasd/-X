@@ -33,10 +33,30 @@ if (typeof window.FriendRenderer === 'undefined') {
 
     /**
      * 从上下文中提取所有好友和群聊信息
-     * [修复v3] 不再无条件清空 extractedFriends，改为合并策略
-     * 保留通过 addFriend 直接添加的好友（source: 'direct'），再从变量/上下文补充
+     * [PhoneDataStore集成] 优先从统一数据层读取，保持数据一致性
      */
     extractFriendsFromContext() {
+      // [PhoneDataStore集成] 优先从统一数据层读取
+      if (window.PhoneDataStore) {
+        var pdsFriends = PhoneDataStore.get('friends');
+        if (pdsFriends && Array.isArray(pdsFriends) && pdsFriends.length > 0) {
+          console.log('[Friend Renderer] 从 PhoneDataStore 加载好友列表:', pdsFriends.length, '个');
+          this.extractedFriends = pdsFriends.map(function(f) {
+            return {
+              type: f.type || 'friend',
+              name: f.name,
+              number: String(f.number),
+              messageIndex: f.messageIndex || 0,
+              addTime: f.addTime || Date.now(),
+              isGroup: f.isGroup || false,
+              source: 'phoneDataStore',
+              lastMessage: f.lastMessage || ''
+            };
+          });
+          return this.extractedFriends;
+        }
+      }
+
       // [修复v3] 保留通过 addFriend 直接添加的好友（避免异步写入变量时被清空）
       var preservedFriends = [];
       if (this.extractedFriends && this.extractedFriends.length > 0) {
@@ -56,7 +76,6 @@ if (typeof window.FriendRenderer === 'undefined') {
             ? window.BridgeAPI.ConfigManager.getSync('xb.phone.friends.list')
             : null;
           if (!friendsListStr && window.BridgeAPI.ConfigManager.get) {
-            // 同步方式不可用时，尝试从缓存读取
             friendsListStr = window.BridgeAPI._varCache
               ? window.BridgeAPI._varCache['xb.phone.friends.list']
               : null;
@@ -65,9 +84,9 @@ if (typeof window.FriendRenderer === 'undefined') {
             var friendsList = JSON.parse(friendsListStr);
             if (Array.isArray(friendsList) && friendsList.length > 0) {
               console.log('[Friend Renderer] 从小白X变量加载好友列表:', friendsList.length, '个');
+              var self = this;
               friendsList.forEach(function(f) {
-                var friendKey = 'friend_var_' + f.name + '_' + f.number;
-                this.extractedFriends.push({
+                self.extractedFriends.push({
                   type: 'friend',
                   name: f.name,
                   number: String(f.number),
@@ -76,7 +95,7 @@ if (typeof window.FriendRenderer === 'undefined') {
                   isGroup: false,
                   source: 'variable'
                 });
-              }.bind(this));
+              });
               varFriendsLoaded = true;
             }
           }
