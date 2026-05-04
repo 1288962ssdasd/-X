@@ -13,8 +13,12 @@
  * - 订阅：PhoneDataStore.subscribe('friends', callback)
  */
 
+console.log('[PhoneDataStore] 开始加载 phone-data-store.js...');
+
 (function () {
     'use strict';
+
+    console.log('[PhoneDataStore] IIFE 开始执行...');
 
     // ============================================================
     // 第一部分：核心存储
@@ -480,9 +484,11 @@
     // ============================================================
     if (!window.PhoneDataStore) {
         window.PhoneDataStore = PhoneDataStore;
-        log('模块已加载');
+        console.log('=== [PhoneDataStore] 模块已加载 ===');
+        console.log('[PhoneDataStore] 版本: 1.0.0');
+        console.log('[PhoneDataStore] API: get(), set(), subscribe(), moduleReady()');
     } else {
-        console.log('[PhoneDataStore] 已存在，跳过重复加载');
+        console.warn('[PhoneDataStore] 已存在，跳过重复加载');
     }
 
 })();

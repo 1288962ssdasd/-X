@@ -24,7 +24,7 @@
     { name: 'message-sender',    src: 'app/message-sender.js',        globalVar: 'messageSender',     deps: ['message-renderer'] },
     { name: 'message-app',        src: 'app/message-app.js',           globalVar: 'messageApp',        deps: ['message-sender', 'phone-data-store'] },
     { name: 'attachment-sender', src: 'app/attachment-sender.js',     globalVar: 'attachmentSender', deps: ['message-app'] },
-    { name: 'friends-circle',     src: 'app/friends-circle.js',        globalVar: 'friendsCircle',     deps: ['message-app'] },
+    { name: 'friends-circle',     src: 'app/friends-circle.js',        globalVar: 'FriendsCircle',     deps: ['message-app'] },
     { name: 'voice-message-handler', src: 'app/voice-message-handler.js', globalVar: 'voiceMessageHandler', deps: ['message-renderer'] },
     { name: 'phone-tts',         src: 'phone-tts.js',                 globalVar: 'phoneTTS',          deps: ['message-renderer'] },
     { name: 'bridge-api',        src: 'bridge-api.js',                globalVar: 'BridgeAPI',         deps: ['phone-tts', 'phone-data-store'] },
