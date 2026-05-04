@@ -6002,8 +6002,18 @@ class MobilePhone {
     }
 
     // 加载消息应用
+    // [PhoneDataStore集成] 检查 phone-loader.js 是否已加载模块
     async loadMessageApp() {
         console.log('[Mobile Phone] 开始加载消息应用模块...');
+
+        // [PhoneDataStore集成] 检查 Phone 加载器是否已加载模块
+        if (window.Phone && window.Phone.ready) {
+            console.log('[Mobile Phone] Phone Loader 已就绪，检查模块...');
+            if (window.MessageApp && window.getMessageAppContent && window.bindMessageAppEvents) {
+                console.log('[Mobile Phone] ✅ Phone Loader 已加载 Message App 模块，跳过重复加载');
+                return Promise.resolve();
+            }
+        }
 
         // 检查是否已加载 - 只检查必要的全局变量
         if (window.MessageApp && window.getMessageAppContent && window.bindMessageAppEvents) {
@@ -6015,6 +6025,30 @@ class MobilePhone {
         if (window._messageAppLoading) {
             console.log('[Mobile Phone] Message App 正在加载中，等待完成');
             return window._messageAppLoading;
+        }
+
+        // 检查 Phone 加载器是否正在加载
+        if (window.Phone && window.Phone.loading) {
+            console.log('[Mobile Phone] Phone Loader 正在加载中，等待完成...');
+            return new Promise((resolve, reject) => {
+                var checkInterval = setInterval(function() {
+                    if (window.Phone && window.Phone.ready) {
+                        clearInterval(checkInterval);
+                        if (window.MessageApp && window.getMessageAppContent) {
+                            console.log('[Mobile Phone] ✅ Phone Loader 加载完成');
+                            resolve();
+                        } else {
+                            console.warn('[Mobile Phone] ⚠️ Phone Loader 加载完成但 MessageApp 未定义');
+                            resolve(); // 仍然 resolve，让后续逻辑处理
+                        }
+                    }
+                }, 100);
+                setTimeout(function() {
+                    clearInterval(checkInterval);
+                    console.warn('[Mobile Phone] ⚠️ 等待 Phone Loader 超时');
+                    resolve();
+                }, 10000);
+            });
         }
 
         // 标记正在加载

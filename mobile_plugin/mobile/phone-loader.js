@@ -175,7 +175,21 @@
         // 全部加载完成
         Phone.ready = true;
         Phone.loading = false;
+        window.__phoneLoaded = true;
+        window.__phoneLoading = false;
         console.log('[Phone Loader] 所有模块加载完成，顺序:', Phone._loadOrder);
+        
+        // [PhoneDataStore集成] 通知 PhoneDataStore 模块就绪
+        if (window.PhoneDataStore) {
+          PhoneDataStore.moduleReady('phone-loader');
+          console.log('[Phone Loader] 已通知 PhoneDataStore 模块就绪');
+        }
+        
+        // [修复] 通知 messageApp 就绪
+        if (window.messageApp && window.PhoneDataStore) {
+          PhoneDataStore.moduleReady('messageApp');
+        }
+        
         if (Phone._onReady) {
           Phone._onReady();
           Phone._onReady = null;
